@@ -1,81 +1,78 @@
 # Import necessary modules
-import random, art, sys
+from art import logo
+import sys, random
 
-in_game = True
+cards_deck = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
 
-# Values of the card
-cards_deck = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10 ,10]
+deal_card = lambda: random.choice(cards_deck)
 
-# calculates the score of the list elements
-def calculate_score(cards):
-    if sum(cards) > 21 and 11 in cards:
-        cards[cards.index(11)] = 1
+def calculate_scores(cards):
+    if sum(cards) == 21 and len(cards) == 2:
+        return 0
+    
+    if 11 in cards and sum(cards) > 21:
+        cards.remove(11)
+        cards.append(1)
+    
     return sum(cards)
 
-def clear_terminal():
-    """
-    Clears the terminal screen
-    :return: Nothing
-    """
-    print("\n" * 100)
-
-def select_winner(player_cards, computer_cards, user_score, computer_score):
-    print(f"  Your final hand: {player_cards}, final score: {user_score}")
-
-    while computer_score < 17:
-
-        # Draw cards
-        random_card = random.choice(cards_deck)
-        computer_cards.append(random_card)
-        computer_score = calculate_score(computer_cards)
-
-    print(f"  Computer's final hand: {computer_cards}, final score: {computer_score}")
-
-    # Print the winner
-    if user_score <= 21 and computer_score <= 21:
-        if user_score > computer_score:
-            print("You win! :)")
-        elif computer_score > user_score:
-            print("You are busted! Computer wins")
-        else:
-            print("It's a draw")
-    elif user_score > 21 and computer_score <= 21:
-        print('You went over 21. So computer wins!!!')
+def compare(user_score, computer_score):
+    if user_score == computer_score:
+        return "It's a draw"
+    elif user_score == 0:
+        return "Win! Win! Blackjack"
+    elif computer_score == 0:
+        return "You Lose. Computer has blackjack"
+    elif user_score > 21 and computer_score > 21:
+        return "You both went over. It's a draw"
+    elif computer_score > 21:
+        return "You win. Computer went over 21."
+    elif user_score > 21:
+        return "You went over 21. So computer wins."
+    elif user_score > computer_score:
+        return "You win!"
     else:
-        print('You win!!! Computer went over 21 :)')
+        return "You Lose!"
 
 def play_blackjack():
+    user_cards = []
+    computer_cards = []
+    print("\n"* 20)
+    is_game_over = False
+    print(logo)
+    for _ in range(2):
+        user_cards.append(deal_card())
+        computer_cards.append(deal_card())
 
-    # Choose two random cards to begin the game
-    player_cards = random.sample(cards_deck, 2)
-    computer_cards = random.sample(cards_deck, 2)
-
-    # Initial score of user and computer
-    user_current_score = calculate_score(player_cards)
-    computer_current_score = calculate_score(computer_cards)
-    play_game = input("Do you wanna play blackjack game? Type 'yes' or 'no' or 'exit': ").lower()
-    if play_game == 'exit':
-        print(f"Quitting...................")
-        sys.exit()
-    else:
-        if play_game == 'yes':
-            clear_terminal()
-            print(art.logo)
-            while user_current_score < 21:
-                print(f"    Your cards: {player_cards}, current_score: {user_current_score}")
-                print(f"    Computer's first card: {computer_cards[0]}")
-                choose_another_card = input("Type 'y' to get another card, type 'n' to pass: ").lower()
-                if choose_another_card == 'y':
-                    random_card = random.choice(cards_deck)
-                    player_cards.append(random_card)
-                    user_current_score = calculate_score(player_cards)
-            select_winner(player_cards, computer_cards, user_current_score, computer_current_score)
-        elif play_game == 'no':
-            clear_terminal()
-            select_winner(player_cards, computer_cards, user_current_score, computer_current_score)
+    user_score = calculate_scores(user_cards)
+    computer_score = calculate_scores(computer_cards)
+    while not is_game_over:
+        print(f"    Your cards: {user_cards}, current_score: {user_score}")
+        print(f"    Computer's first card: {computer_cards[0]}")
+        if user_score == 0 or computer_score == 0 or user_score >= 21:
+            is_game_over = True
         else:
-            clear_terminal()
-            print(f"Invalid input. Pass a valid input")
+            hit_or_stand = input("Do you wanna 'hit' or 'stand'?").lower()
+            if hit_or_stand == 'hit':
+                user_cards.append(deal_card())
+                user_score = calculate_scores(user_cards)
+            else:
+                is_game_over = True
 
-while in_game:
-    play_blackjack()
+
+    while computer_score != 0 and computer_score < 17:
+        computer_cards.append(deal_card())
+        computer_score = calculate_scores(computer_cards)
+
+    print(f"  Your final hand: {user_cards}, final score: {user_score}")
+    print(f"  Computer's final hand: {computer_cards}, final score: {computer_score}")
+    print(compare(user_score, computer_score))
+    return
+
+while True:
+    play_game = input("Do you wanna play blackjack game? Type 'yes' or 'no' or 'exit': ").lower()
+    if play_game == 'yes':
+        play_blackjack()
+    else:
+        sys.exit()
+
