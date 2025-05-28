@@ -75,4 +75,3 @@ while True:
         play_blackjack()
     else:
         sys.exit()
-
